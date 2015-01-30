@@ -1,6 +1,6 @@
 #!/bin/bash
 
-__FILE__="${BASH_SOURCE[${#BASH_SOURCE[@]} - 1]}"
+__FILE__="$PWD/${BASH_SOURCE[${#BASH_SOURCE[@]} - 1]}"
 __DIR__=$(dirname "$__FILE__")
 TMPDIR="$__DIR__/tmp"
 mkdir -p $TMPDIR
@@ -10,10 +10,10 @@ original_pwd="$PWD"
 
 trap 'cd "$original_pwd"; rm -rf "$STDOUT"; rm -rf "$TDERR"; rm -rf "$TMPDIR"' exit
 
-alias swapf="$__DIR__/../swapf"
-
 before_each() {
+  alias swapf="$__DIR__/../swapf"
   cd "$TMPDIR"
+  : >| "$STDERR" >| "$STDOUT"
   echo -n a > a
   echo -n b > b
 }
@@ -28,7 +28,7 @@ it(){
   local cmd="_(){ "$(cat)"; };_" #wrap into an immediately invokable function so we can use return
   local ret=0
   before_each
-  if eval "$cmd" > "$STDOUT" 2> "$STDERR" ; then
+  if eval "$cmd" >| "$STDOUT" 2>| "$STDERR" ; then
     echo -en "OK\t"
     ret=0
   else
@@ -43,11 +43,11 @@ assert() {
   eval "$1"
 }
 
-it "should swap two different files" <<'EOF'
+it "should swap two different files" <<'eof'
   swapf a b
   [[ "$(cat a)" == "b" ]] && 
   [[ "$(cat b)" == "a" ]]
-EOF
+eof
 
 it "it should error out unless two args given" <<'eof'
   ! swapf a b c && ! swapf a && ! swapf
@@ -56,4 +56,11 @@ eof
 it "it should error out if the same file is given" <<'eof'
   ! swapf a a
 eof
+
+it "swapf should also be an insourcable function" <<'eof'
+  unalias swapf
+  source "$__DIR__/../swapf" && type swapf | grep -q 'is a function'
+eof
+
+exit 0
 

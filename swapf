@@ -1,5 +1,5 @@
 #!/bin/bash
-function swapf()
+swapf()
 {
   [[ "$#" != 2 ]] && { echo "Must provide two files" >&2; return 1; }
   [[ ! -f "$1" ]] && { echo "No such file: $1" >&2; return 1; }
@@ -8,6 +8,11 @@ function swapf()
   TMP=`mktemp --tmpdir=.`
   mv "$1" "$TMP" && mv "$2" "$1" && mv "$TMP" "$2"
 }
-__FILE__="${BASH_SOURCE[${#BASH_SOURCE[@]} - 1]}"
 
-[[ "$__FILE__" == "$0" ]] && swapf "$@"
+__FILE__="$BASH_SOURCE"
+
+if [[ "$__FILE__" = "$0" ]] ; then
+  swapf "$@"
+else
+  true
+fi

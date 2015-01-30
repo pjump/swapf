@@ -1,9 +1,13 @@
 #!/bin/bash
 function swapf()
 {
-  [ "$1" == "$2" ] && { echo "Can't swap for the same file." >&2; return 1; }
-  [ ! -f "$1" ] && { echo "No such file: $1" >&2; return 1; }
-  [ ! -f "$2" ] && { echo "No such file: $2" >&2; return 1; }
+  [[ "$#" != 2 ]] && { echo "Must provide two files" >&2; return 1; }
+  [[ ! -f "$1" ]] && { echo "No such file: $1" >&2; return 1; }
+  [[ ! -f "$2" ]] && { echo "No such file: $2" >&2; return 1; }
+  [[ "$1" == "$2" ]] && { echo "Can't swap for the same file." >&2; return 1; }
   TMP=`mktemp --tmpdir=.`
   mv "$1" "$TMP" && mv "$2" "$1" && mv "$TMP" "$2"
 }
+__FILE__="${BASH_SOURCE[${#BASH_SOURCE[@]} - 1]}"
+
+[[ "$__FILE__" == "$0" ]] && swapf "$@"
